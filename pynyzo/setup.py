@@ -38,7 +38,7 @@ setup(
     license="MIT license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
-    keywords='pynyzo',
+    keywords='pynyzo, nyzo, python, crypto',
     name='pynyzo',
     packages=find_packages(include=['pynyzo']),
     setup_requires=setup_requirements,
