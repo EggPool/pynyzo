@@ -3,7 +3,7 @@ Transcripted from https://github.com/n-y-z-o/nyzoVerifier/blob/master/src/main/j
 """
 
 from abc import ABC, abstractmethod
-# May not be needed, todo
+
 
 class MessageObject(ABC):
 
@@ -14,8 +14,10 @@ class MessageObject(ABC):
 
     # @abstractmethod
     def get_byte_size(self) -> int:
-        return len(self._bytes)
+        # return len(self._bytes)
+        pass
 
     # @abstractmethod
     def get_bytes(self) -> bytes:
-        return self._bytes
+        #return self._bytes
+        pass
