@@ -2,10 +2,12 @@
 Message ancestor class for Nyzo messages
 """
 
+import struct
 from abc import ABC, abstractmethod
 from pynyzo.helpers import base_app_log
 from pynyzo.messagetype import MessageType
-from pynyzo.messageobject import MessageObject
+from pynyzo.messageobject import MessageObject, EmptyMessageObject
+from pynyzo.fieldbytesize import FieldByteSize
 from time import time
 
 __version__ = '0.0.1'
@@ -28,7 +30,7 @@ class Message(ABC):
     # as a potential pool for random requests for the following types. This reduces strain on in-cycle verifiers.
     fullMeshMessageTypes = (MessageType.BlockRequest11, MessageType.BlockWithVotesRequest37)
 
-    def __init__(self, a_type: MessageType, content: MessageObject, app_log:object, sourceNodeIdentifier: bytes=None,
+    def __init__(self, a_type: MessageType, content: MessageObject, app_log:object=None, sourceNodeIdentifier: bytes=None,
                  sourceNodeSignature: bytes=None, sourceIpAddress: bytes=None, timestamp: int=0):
         """This is the constructor for a new message originating from this system AND from the outside,
         depending on the params."""
@@ -44,6 +46,9 @@ class Message(ABC):
             self.app_log.error("TODO: Handle verifier")
             # self._sourceNodeIdentifier = Verifier.getIdentifier();
             # self._sourceNodeSignature = Verifier.sign(getBytesForSigning());
+            self._sourceNodeIdentifier = b''
+            self._sourceNodeSignature = b''
+
         else:
             # From another system
             self._timestamp = timestamp
@@ -59,10 +64,9 @@ class Message(ABC):
                 # self.app_log.warning(f"message from {PrintUtil.compactPrintByteArray(sourceNodeIdentifier)} of type {self._type.name} is not valid, content is {content}"
                 # self.app_log.warning(f"signature is {ByteUtil.arrayAsStringWithDashes(sourceNodeSignature)}")
 
-    @abstractmethod
     def to_string(self) -> str:
         """String view of the message for log/print"""
-        pass
+        return f"[Message: {self._type.name} ({self.get_content()})]"
 
     def get_timestamp(self) -> int:
         return self._timestamp
@@ -90,4 +94,26 @@ class Message(ABC):
         self.app_log.error("TODO: Message.sign()")
         # self._sourceNodeIdentifier = KeyUtil.identifierForSeed(private_seed);
         # self._sourceNodeSignature = SignatureUtil.signBytes(self.get_bytes_for_signing(), private_seed);
+
+    def get_bytes_for_transmission(self) -> bytes:
+        """"""
+        # Determine the size (timestamp, type, source-node identifier, source-node signature, content if present).
+        size_bytes = FieldByteSize.messageLength + FieldByteSize.timestamp + FieldByteSize.messageType \
+                     + FieldByteSize.identifier + FieldByteSize.signature
+        size_bytes += self._content.get_byte_size()
+
+        # Make the buffer.
+        buffer = b''
+        # Header is low level, added when sending
+        # buffer += struct.pack('I', size_bytes)  # 4 bytes
+
+        # Add the data.
+        buffer += struct.pack('>Q', self._timestamp)   # unsigned long long, 8 bytes
+        self.app_log.debug(f"get bytes for message {self._type.name}, {self._type.value}")
+        buffer += struct.pack('>h', self._type.value)  # 2 bytes
+        buffer += self._content.get_bytes()  # no need for test, see EmptyMessageObject
+        buffer += self._sourceNodeIdentifier
+        buffer += self._sourceNodeSignature
+        self.app_log.debug(f"buffer ({len(buffer)}): {buffer.hex()}")
+        return buffer
 

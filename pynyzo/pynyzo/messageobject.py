@@ -22,3 +22,12 @@ class MessageObject(ABC):
     def get_bytes(self) -> bytes:
         #return self._bytes
         pass
+
+
+class EmptyMessageObject(MessageObject):
+
+    def get_byte_size(self) -> int:
+        return 0
+
+    def get_bytes(self) -> bytes:
+        return b''
