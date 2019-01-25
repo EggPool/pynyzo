@@ -33,5 +33,5 @@ def buffer_to_strings(b: bytearray) -> list:
     for i in range(number_of_lines):
         line_len = struct.unpack("h", b[pos:pos + 2])[0]
         result.append(b[pos+2:pos+2+line_len].decode('utf-8'))
-        pos += line_len
+        pos += line_len + 2
     return result

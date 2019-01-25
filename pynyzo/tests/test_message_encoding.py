@@ -1,8 +1,8 @@
 import pytest
 import sys
 
-sys.path.append('../pynyzo')
-from messages.statusresponse import StatusResponse
+sys.path.append('../')
+from pynyzo.messages.statusresponse import StatusResponse
 
 
 def test_status_1(verbose=False):
