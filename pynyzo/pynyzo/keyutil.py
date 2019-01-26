@@ -8,6 +8,7 @@ https://github.com/n-y-z-o/nyzoVerifier/blob/b73bc25ba3094abe3470ec070ce306885ad
 
 
 import ed25519
+from pynyzo.byteutil import ByteUtil
 
 
 class KeyUtil:
@@ -16,9 +17,9 @@ class KeyUtil:
     def main():
         """Temp test"""
         signing_key, verifying_key = ed25519.create_keypair()
-        print("my-secret-key", signing_key.to_ascii(encoding="hex"))
-        vkey_hex = verifying_key.to_ascii(encoding="hex")
-        print("the public key is", vkey_hex)
+        print("Original private key", ByteUtil.bytes_as_string_with_dashes(signing_key.to_bytes()[:32]))
+        # signing key has signing + verifying, we keep the first 32 to only get the private part.
+        print("Original public key", ByteUtil.bytes_as_string_with_dashes(verifying_key.to_bytes()))
 
     @staticmethod
     def private_to_public(private: str):
