@@ -37,14 +37,13 @@ class StatusResponse(MessageObject):
     def to_json(self) -> str:
         return json.dumps({"message_type": MessageType.StatusResponse18.name, 'value': self._lines})
 
-    @staticmethod
-    def print():
+    def print(self):
         """Create the status message and print it"""
         app_log = base_app_log()
-        app_log.error("TODO StatusResponse.print()")
+        app_log.info(self.to_string())
         #response = StatusResponse(Verifier.getIdentifier())  # TODO
-        response = None
-        for line in response.get_lines():
+        # response = None
+        for line in self._lines:
             app_log.info(line)
 
 
