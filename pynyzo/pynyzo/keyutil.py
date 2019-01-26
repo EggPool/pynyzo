@@ -71,10 +71,10 @@ class KeyUtil:
         # todo: cache key from id, see https://github.com/n-y-z-o/nyzoVerifier/blob/17509f03a7f530c0431ce85377db9b35688c078e/src/main/java/co/nyzo/verifier/util/SignatureUtil.java
         try:
             verifying_key.verify(signature, signed_bytes)
-            print("signature is good")
+            # print("signature is good")
             return True
         except ed25519.BadSignatureError:
-            print("signature is bad!")
+            # print("signature is bad!")
             return False
 
 

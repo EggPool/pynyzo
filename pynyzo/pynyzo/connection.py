@@ -11,6 +11,8 @@ import threading
 
 from pynyzo.helpers import base_app_log
 from pynyzo.message import Message
+from pynyzo.messagetype import MessageType
+from pynyzo.messageobject import MessageObject, EmptyMessageObject
 
 # Logical timeout
 LTIMEOUT = 45
@@ -147,14 +149,18 @@ class Connection(object):
         except Exception as e:
             pass
 
-    def fetch(self, message: Message, identifier: bytes=b'') -> bytes:
-        """From Message"""
+    def fetch_buffer(self, message: Message, identifier: bytes=b'') -> bytes:
+        """From Message - fetch bin buffer"""
         # TODO
         # identifier = NodeManager.identifierForIpAddress(self.ip);
         self.send(message.get_bytes_for_transmission())
         response = self.receive()
         return response
 
+    def fetch(self, message: Message, identifier: bytes=b'') -> MessageObject:
+        """Fetch then decode"""
+        buffer = self.fetch_buffer(message, identifier)
+        return Message.from_bytes(buffer, b'').get_content()  # self.ip, but convert or use str for ips?
 
 
 if __name__ == "__main__":

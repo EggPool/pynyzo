@@ -2,7 +2,8 @@
 from pynyzo.messageobject import MessageObject
 from pynyzo.helpers import strings_to_buffer, buffer_to_strings
 from pynyzo.helpers import base_app_log
-
+from pynyzo.messagetype import MessageType
+import json
 
 class StatusResponse(MessageObject):
     """"""
@@ -15,7 +16,8 @@ class StatusResponse(MessageObject):
         self._lines = list() if list is None else lines
         if buffer:
             # decode from bin buffer, same as fromByteBuffer of original code.
-            self._lines = buffer_to_strings(bytearray(buffer))
+            self._lines = buffer_to_strings(bytearray(buffer[10:]))
+            # buffer is the full buffer with timestamp and type, why the 10 offset.
 
     def get_lines(self) -> list:
         return self._lines
@@ -31,6 +33,9 @@ class StatusResponse(MessageObject):
 
     def to_string(self) -> str:
         return f"[StatusResponse(n={len(self._lines)})]"
+
+    def to_json(self) -> str:
+        return json.dumps({"message_type": MessageType.StatusResponse18.name, 'value': self._lines})
 
     @staticmethod
     def print():

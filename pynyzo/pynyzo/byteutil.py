@@ -12,5 +12,4 @@ class ByteUtil:
     @staticmethod
     def bytes_as_string_with_dashes(buffer: bytes) -> str:
         hexa = buffer.hex()
-        print(buffer, hexa)
         return '-'.join(split_by_len(hexa, 8))

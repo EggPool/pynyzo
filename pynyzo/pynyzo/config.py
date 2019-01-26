@@ -113,16 +113,17 @@ def _overload(file_name: str):
                 globals().update({left: right})
 
 
-def load():
+def load(dir: str='./'):
     """
     Overload info with config.default.txt and config.txt
     :return:
     """
     global PRIVATE_KEY
     global PUBLIC_KEY
-    _overload("config.default.txt")
-    if path.exists("config.txt"):
-        _overload("config.txt")
+    if path.exists(dir + "config.default.txt"):
+        _overload(dir + "config.default.txt")
+    if path.exists(dir + "config.txt"):
+        _overload(dir + "config.txt")
 
     # Load the keys
     if not path.isfile(NYZO_SEED):
@@ -130,7 +131,9 @@ def load():
         PRIVATE_KEY = KeyUtil.generateSeed()
         KeyUtil.save_to_private_seed_file(NYZO_SEED, PRIVATE_KEY)
     PRIVATE_KEY, PUBLIC_KEY = KeyUtil.get_from_private_seed_file(NYZO_SEED)
-    print(f"Key Loaded, public id {ByteUtil.bytes_as_string_with_dashes(PUBLIC_KEY.to_bytes())}")
+    # We can tweak verbosity later on, do not print here but later on.
+    if DEBUG:
+        print(f"Key Loaded, public id {ByteUtil.bytes_as_string_with_dashes(PUBLIC_KEY.to_bytes())}")
 
     return {var: globals()[var] for var in _VARS}
 

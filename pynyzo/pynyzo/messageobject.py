@@ -4,7 +4,7 @@ Transcripted from https://github.com/n-y-z-o/nyzoVerifier/blob/master/src/main/j
 
 from abc import ABC, abstractmethod
 from pynyzo.helpers import base_app_log
-
+import json
 
 class MessageObject(ABC):
 
@@ -22,6 +22,9 @@ class MessageObject(ABC):
     def get_bytes(self) -> bytes:
         #return self._bytes
         pass
+
+    def to_json(self) -> str:
+        return json.dumps({"Error": "Not implemented"})
 
 
 class EmptyMessageObject(MessageObject):
