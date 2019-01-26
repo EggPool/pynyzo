@@ -8,6 +8,9 @@ from pynyzo.helpers import base_app_log
 from pynyzo.messagetype import MessageType
 from pynyzo.messageobject import MessageObject, EmptyMessageObject
 from pynyzo.fieldbytesize import FieldByteSize
+from pynyzo.keyutil import KeyUtil
+import pynyzo.config as config
+
 from time import time
 
 __version__ = '0.0.1'
@@ -42,12 +45,9 @@ class Message(ABC):
         if sourceNodeIdentifier is None:
             # From our system
             self._timestamp = int(time()*1000)
-            # TODO
-            self.app_log.error("TODO: Handle verifier")
-            # self._sourceNodeIdentifier = Verifier.getIdentifier();
-            # self._sourceNodeSignature = Verifier.sign(getBytesForSigning());
-            self._sourceNodeIdentifier = b''
-            self._sourceNodeSignature = b''
+            self._sourceNodeIdentifier = config.PUBLIC_KEY.to_bytes()
+            self._sourceNodeSignature = KeyUtil.sign_bytes(self.get_bytes_for_signing(), config.PRIVATE_KEY)
+            KeyUtil.signature_is_valid(self._sourceNodeSignature, self.get_bytes_for_signing(), config.PUBLIC_KEY.to_bytes())
 
         else:
             # From another system
@@ -91,9 +91,9 @@ class Message(ABC):
 
     def sign(self, private_seed: bytes) -> None:
         # TODO
-        self.app_log.error("TODO: Message.sign()")
-        # self._sourceNodeIdentifier = KeyUtil.identifierForSeed(private_seed);
-        # self._sourceNodeSignature = SignatureUtil.signBytes(self.get_bytes_for_signing(), private_seed);
+        # self.app_log.error("TODO: Message.sign()")
+        self._sourceNodeIdentifier = KeyUtil.private_to_public(private_seed.hex())  # KeyUtil.identifierForSeed(private_seed);
+        self._sourceNodeSignature = KeyUtil.signBytes(self.get_bytes_for_signing(), private_seed)
 
     def get_bytes_for_transmission(self) -> bytes:
         """"""
@@ -117,3 +117,22 @@ class Message(ABC):
         self.app_log.debug(f"buffer ({len(buffer)}): {buffer.hex()}")
         return buffer
 
+    def get_bytes_for_signing(self) -> bytes:
+        """"""
+        # Determine the size (timestamp, type, source-node identifier, content if present).
+        size_bytes = FieldByteSize.timestamp + FieldByteSize.messageType + FieldByteSize.identifier
+        size_bytes += self._content.get_byte_size()
+
+        # Make the buffer.
+        buffer = b''
+        # Header is low level, added when sending
+        # buffer += struct.pack('I', size_bytes)  # 4 bytes
+
+        # Add the data.
+        buffer += struct.pack('>Q', self._timestamp)   # unsigned long long, 8 bytes
+        self.app_log.debug(f"get bytes for signing {self._type.name}, {self._type.value}")
+        buffer += struct.pack('>h', self._type.value)  # 2 bytes
+        buffer += self._content.get_bytes()  # no need for test, see EmptyMessageObject
+        buffer += self._sourceNodeIdentifier
+        self.app_log.debug(f"buffer to sign ({len(buffer)}): {buffer.hex()}")
+        return buffer

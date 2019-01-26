@@ -44,7 +44,7 @@ class Connection(object):
                 self.last_activity = time()
             except Exception as e:
                 self.sdef = None
-                raise RuntimeError(f"Connections: {d}")
+                raise RuntimeError(f"Connections: {e}")
 
     def send(self, data, retry=True):
         """Sends data buffer to the peer, appends the len header"""
@@ -100,7 +100,7 @@ class Connection(object):
             chunks = []
             bytes_recd = 0
             while bytes_recd < length:
-                chunk = self.sdef.recv(min(data - bytes_recd, 2048))
+                chunk = self.sdef.recv(min(length - bytes_recd, 2048))
                 if not chunk:
                     raise RuntimeError("Socket EOF2")
                 chunks.append(chunk)

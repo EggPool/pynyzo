@@ -1,0 +1,9 @@
+# Default config - create and edit your config.txt instead.
+
+VERBOSE=True
+
+DEBUG=True
+
+DUMP_PACKETS=False
+
+NYZO_SEED=tmp/verifier_private_seed

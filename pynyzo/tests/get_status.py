@@ -13,6 +13,7 @@ from pynyzo.messageobject import EmptyMessageObject
 from pynyzo.messages.statusresponse import StatusResponse
 from pynyzo.connection import Connection
 from pynyzo.helpers import tornado_logger
+import pynyzo.config as config
 
 
 if __name__ == "__main__":
@@ -22,6 +23,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     app_log = tornado_logger()
+
+    config.load()
+
     connection = Connection(args.ip, app_log=app_log, verbose=args.verbose)
     empty = EmptyMessageObject(app_log=app_log)
     message = Message(MessageType.StatusRequest17, empty, app_log=app_log)
