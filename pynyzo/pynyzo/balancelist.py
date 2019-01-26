@@ -8,14 +8,15 @@ import json
 import struct
 
 
-class BlockRequest(MessageObject):
-    """BlockRequest message"""
+class BalanceList(MessageObject):
+    """BalanceList message"""
 
+    """
     __slots__ = ('_start_height', '_end_height', '_include_balance_list')
 
     def __init__(self, start_height: int=0, end_height: int=0, include_balance_list: bool=False,
                  buffer: bytes = None, app_log=None):
-        """This replaces the various constructors from java, depending on the params"""
+        # This replaces the various constructors from java, depending on the params
         super().__init__(app_log=app_log)
         if buffer:
             # buffer is the full buffer with timestamp and type, why the 10 offset.
@@ -56,9 +57,10 @@ class BlockRequest(MessageObject):
         return json.dumps({"message_type": MessageType.BlockRequest11.name, 'value': {
             'start_height': self._start_height, 'end_height': self._end_height,
             'include_balance_list': self._include_balance_list}})
+    """
 
     def print(self):
         """Create the status message and print it"""
         app_log = base_app_log()
-        app_log.info(self.to_string())
+        # app_log.info(self.to_string())
 
