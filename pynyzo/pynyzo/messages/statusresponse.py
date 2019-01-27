@@ -18,6 +18,7 @@ class StatusResponse(MessageObject):
             # decode from bin buffer, same as fromByteBuffer of original code.
             self._lines = buffer_to_strings(memoryview(buffer)[10:])
             # buffer is the full buffer with timestamp and type, why the 10 offset.
+            # Use of memoryview avoid any data copy
 
     def get_lines(self) -> list:
         return self._lines

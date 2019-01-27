@@ -19,7 +19,7 @@ class BlockRequest(MessageObject):
         super().__init__(app_log=app_log)
         if buffer:
             # buffer is the full buffer with timestamp and type, why the 10 offset.
-            self._start_height = struct.unpack(">Q", buffer[10:10+8])[0]
+            self._start_height = struct.unpack(">Q", buffer[10:10+8])[0]  # Long, 8
             self._end_height = struct.unpack(">Q", buffer[10+8:10+8+8])[0]
             self._include_balance_list = struct.unpack("?", buffer[-1:])[0]
         else:
@@ -40,14 +40,14 @@ class BlockRequest(MessageObject):
         return FieldByteSize.blockHeight * 2 + FieldByteSize.booleanField
 
     def get_bytes(self) -> bytes:
-        result = b''
-        result += struct.pack(">Q", self._start_height)  # 8
-        result += struct.pack(">Q", self._end_height)  # 8
+        result = []
+        result.append(struct.pack(">Q", self._start_height))  # 8
+        result.append(struct.pack(">Q", self._end_height))  # 8
         if self._include_balance_list:
-            result += b'\x01'
+            result.append(b'\x01')
         else:
-            result += b'\x00'
-        return result
+            result.append(b'\x00')
+        return b''.join(result)
 
     def to_string(self) -> str:
         return f"[BlockRequest({self._start_height}, {self._end_height}, {self._include_balance_list})]"

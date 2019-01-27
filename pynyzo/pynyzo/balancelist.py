@@ -11,6 +11,7 @@ import struct
 class BalanceList(MessageObject):
     """BalanceList message"""
 
+    # TODO
     """
     __slots__ = ('_start_height', '_end_height', '_include_balance_list')
 

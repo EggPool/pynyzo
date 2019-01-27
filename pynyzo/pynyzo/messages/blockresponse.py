@@ -5,6 +5,7 @@ from pynyzo.helpers import base_app_log
 from pynyzo.messagetype import MessageType
 from pynyzo.fieldbytesize import FieldByteSize
 from pynyzo.balancelist import BalanceList
+from pynyzo.block import Block
 import json
 import struct
 
@@ -22,12 +23,15 @@ class BlockResponse(MessageObject):
             # buffer is the full buffer with timestamp and type, why the 10 offset.
             self._initialBalanceList = None
             if struct.unpack("?", buffer[10:10+1])[0]:
-                initialBalanceList = BalanceList(buffer=buffer);
+                # TODO initialBalanceList = BalanceList(buffer=buffer);
+                self.app_log.error("TODO: BlockResponse initialBalanceList")
             self._blocks = []
             number_of_blocks = struct.unpack(">H", buffer[10+1:10+1+2])[0]  # short = 2 bytes
+            print("number_of_blocks", number_of_blocks)
             offset = 10+1+2
+            mv = memoryview(buffer)
             for i in range(number_of_blocks):
-                block = Block(buffer=buffer, offset=offset)
+                block = Block(buffer=mv[offset:])
                 offset += block.get_byte_size()
                 self._blocks.append(block)
         else:

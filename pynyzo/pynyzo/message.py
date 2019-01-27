@@ -12,6 +12,7 @@ from pynyzo.keyutil import KeyUtil
 from pynyzo.byteutil import ByteUtil
 import pynyzo.config as config
 from pynyzo.messages.statusresponse import StatusResponse
+from pynyzo.messages.blockresponse import BlockResponse
 
 from time import time
 
@@ -165,5 +166,7 @@ class Message(ABC):
         content = EmptyMessageObject()
         if message_type in [MessageType.StatusResponse18]:
             content = StatusResponse(buffer=buffer)
+        if message_type in [MessageType.BlockResponse12]:
+            content = BlockResponse(buffer=buffer)
         return content
 

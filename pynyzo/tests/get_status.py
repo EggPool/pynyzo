@@ -36,7 +36,7 @@ if __name__ == "__main__":
         res = connection.fetch(message)
         print(res.to_json())
     elif args.action == 'block':
-        request = BlockRequest(start_height=1676000, end_height=1676001, include_balance_list=False, app_log=app_log)
+        request = BlockRequest(start_height=1683515, end_height=1683515+2, include_balance_list=False, app_log=app_log)
         message = Message(MessageType.BlockRequest11, request, app_log=app_log)
         res = connection.fetch(message)
         print(res.get_bytes())
