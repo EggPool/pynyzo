@@ -16,7 +16,7 @@ class StatusResponse(MessageObject):
         self._lines = list() if list is None else lines
         if buffer:
             # decode from bin buffer, same as fromByteBuffer of original code.
-            self._lines = buffer_to_strings(bytearray(buffer[10:]))
+            self._lines = buffer_to_strings(memoryview(buffer)[10:])
             # buffer is the full buffer with timestamp and type, why the 10 offset.
 
     def get_lines(self) -> list:

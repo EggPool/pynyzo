@@ -39,21 +39,21 @@ def tornado_logger():
 
 def strings_to_buffer(lines: list) -> bytes:
     """Diverges from Nyzo arch"""
-    result = b''
-    result += struct.pack(">B", len(lines))  # byte
+    result = []
+    result.append(struct.pack(">B", len(lines)))  # byte
     for line in lines:
         bin = line.encode('utf-8')
-        result += struct.pack(">h", len(bin))  # short
-        result += bin
-    return result
+        result.append(struct.pack(">h", len(bin)))  # short
+        result.append(bin)
+    return b''.join(result)
 
 
-def buffer_to_strings(b: bytearray) -> list:
+def buffer_to_strings(b: memoryview) -> list:
     number_of_lines = struct.unpack(">B", b[:1])[0]
     result = list()
     pos = 1
     for i in range(number_of_lines):
         line_len = struct.unpack(">h", b[pos:pos + 2])[0]
-        result.append(b[pos+2:pos+2+line_len].decode('utf-8'))
+        result.append(bytes(b[pos+2:pos+2+line_len]).decode('utf-8'))
         pos += line_len + 2
     return result
