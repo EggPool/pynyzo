@@ -121,6 +121,10 @@ class Transaction(MessageObject):
     def get_bytes(self, for_signing: bool=False):
         self.app_log.error('TODO: Transaction.get_bytes')
 
-
-
+    def to_json(self) -> str:
+        return json.dumps({"message_type": "Transaction", 'value': {
+            'type': self._type,'timestamp': self._timestamp, 'amount': self._amount,
+            'receiver_identifier': self._receiver_identifier.hex(), 'previous_hash_height': self._previous_hash_height,
+            'previous_block_hash': self._previous_block_hash.hex(), 'sender_identifier': self._sender_identifier.hex(),
+            'sender_data': self._sender_data.hex(), 'signature': self._signature.hex()}})
 

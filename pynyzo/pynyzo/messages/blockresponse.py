@@ -75,7 +75,7 @@ class BlockResponse(MessageObject):
 
     def to_json(self) -> str:
         balance = True if self._initialBalanceList else False
-        blocks = [json.reads(block.to_json()) for block in self._blocks]
+        blocks = [json.loads(block.to_json()) for block in self._blocks]
         return json.dumps({"message_type": MessageType.BlockRequest11.name, 'value': {
             'balance': balance, 'blocks': blocks,
             'initial_balance_list': self._initialBalanceList}})

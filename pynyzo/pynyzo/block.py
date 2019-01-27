@@ -114,3 +114,11 @@ return array;
             size += FieldByteSize.identifier + FieldByteSize.signature
         # print("block size", size)
         return size
+
+    def to_json(self) -> str:
+        transactions = [json.loads(tx.to_json()) for tx in self._transactions]
+        return json.dumps({"message_type": "Block", 'value': {
+            'height': self._height, 'previous_block_hash': self._previous_block_hash.hex(),
+            'start_timestamp': self._start_timestamp, 'verification_timestamp': self._verification_timestamp,
+            'transactions': transactions, 'balance_list_hash': self._balance_list_hash.hex(),
+            'verifier_identifier': self._verifier_identifier.hex(), 'verifier_signature': self._verifier_signature.hex()}})

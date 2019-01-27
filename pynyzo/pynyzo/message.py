@@ -59,7 +59,10 @@ class Message(ABC):
             self._sourceNodeIdentifier = sourceNodeIdentifier
             self._sourceNodeSignature = sourceNodeSignature
             self._sourceIpAddress = source_ip_address
-            self._valid = KeyUtil.signature_is_valid(sourceNodeSignature, self.get_bytes_for_signing(), sourceNodeIdentifier)
+            # self._valid = KeyUtil.signature_is_valid(sourceNodeSignature, self.get_bytes_for_signing(), sourceNodeIdentifier)
+            self.valid = True
+            # TODO: needs all the chain of get_bytes to validate; let suppose for now it is valid.
+            self.app_log.warning(f"TODO: Did NOT validate message from {ByteUtil.bytes_as_string_with_dashes(sourceNodeIdentifier)} of type {self._type.name}")
             if not self._valid:
                 self.app_log.warning(f"message from {ByteUtil.bytes_as_string_with_dashes(sourceNodeIdentifier)} of type {self._type.name} is not valid")  # Temp log
                 # TODO
