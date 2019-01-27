@@ -1,18 +1,17 @@
 
 
 from pynyzo.messageobject import MessageObject
-from pynyzo.helpers import base_app_log
-from pynyzo.balancelistitem import BalanceListItem
 from pynyzo.fieldbytesize import FieldByteSize
 import json
 import struct
 
 
-class BalanceList(MessageObject):
+class BalanceListItem(MessageObject):
     """BalanceList message"""
 
     __slots__ = ('_block_height', '_rollover_fees', '_previous_verifiers', '_items')
 
+    """
     def __init__(self, block_height: int=0, rollover_fees: int=0, previous_verifiers: list=None, items: list=None,
                  buffer: bytes=None, app_log=None):
         # This replaces the various constructors from java, depending on the params
@@ -59,32 +58,7 @@ class BalanceList(MessageObject):
     def get_items(self) -> list:
         return self._items
 
-    def get_byte_size(self) -> int:
-        number_of_previous_verifiers = min(self._block_height, 9)
-        bytes_per_item = FieldByteSize.identifier + FieldByteSize.transactionAmount + FieldByteSize.blocksUntilFee
-
-        return FieldByteSize.blockHeight + FieldByteSize.rolloverTransactionFees \
-               + FieldByteSize.identifier * number_of_previous_verifiers + FieldByteSize.balanceListLength \
-               + bytes_per_item * len(self._items)
-
-    def get_bytes(self) -> bytes:
-        result = b''
-        self.app_log.error("TODO: BalanceList.get_bytes")
-        return result
-
-    def get_hash(self) -> bytes:
-        return HashUtil.double_sha256(self.get_bytes())
-
-    def to_string(self) -> str:
-        return f"[BalanceList: height={self._block_height}, hash={self.get_hash().hex()}]"
-
-    def to_json(self) -> str:
-        items = [json.loads(item.to_json()) for item in self._items]
-        previous_verifiers = [verifier.hex() for verifier in self._previous_verifiers]
-        return json.dumps({"message_type": "BalanceList", 'value': {
-            'height': self._block_height, 'rollover_fees': self._rollover_fees,
-            'previous_verifiers': previous_verifiers, "items": items}})
-
+    """
 
 
 
