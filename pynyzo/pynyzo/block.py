@@ -47,7 +47,8 @@ class Block(MessageObject):
     """
 
     def __init__(self, height: int=0, previous_block_hash: bytes=None, start_timestamp: int=0, transactions:list=None,
-                 balance_list_hash:bytes=None, buffer: bytes=None, offset=0):
+                 balance_list_hash:bytes=None, buffer: bytes=None, offset=0, app_log=None):
+        super().__init__(app_log=app_log)
         if buffer is None:
             # TODO
             pass
@@ -55,7 +56,6 @@ class Block(MessageObject):
             # Same as original fromByteBuffer constructor
             self._height = struct.unpack(">Q", buffer[offset:offset +8])[0]  # Long, 8
             offset += 8
-            # TODO: probly little/big endian conversion needed
             self._previous_block_hash = buffer[offset:offset +32]  # struct.unpack(">IIIIIIII", buffer[offset:offset +32])  # 32 bytes, 8 int
             offset += 32
             self._start_timestamp = struct.unpack(">Q", buffer[offset:offset +8])[0]  # Long, 8
@@ -65,7 +65,7 @@ class Block(MessageObject):
             number_of_transactions = struct.unpack(">I", buffer[offset:offset +4])[0]  # Int, 4
             offset += 4
             self._transactions = []
-            self.app_log.debug("Block", self._height, self._previous_block_hash.hex(), self._start_timestamp, self._verification_timestamp, number_of_transactions)
+            self.app_log.debug(f"Block {self._height}, {self._previous_block_hash.hex()}, {self._start_timestamp}, {self._verification_timestamp}, {number_of_transactions}")
             mv = memoryview(buffer)
             for i in range(number_of_transactions):
                 transaction = Transaction(buffer=mv[offset:])

@@ -164,9 +164,9 @@ class Message(ABC):
     @staticmethod
     def process_content(message_type: MessageType, buffer: bytes) -> MessageObject:
         content = EmptyMessageObject()
-        if message_type in [MessageType.StatusResponse18]:
+        if message_type == MessageType.StatusResponse18:
             content = StatusResponse(buffer=buffer)
-        if message_type in [MessageType.BlockResponse12]:
+        if message_type == MessageType.BlockResponse12:
             content = BlockResponse(buffer=buffer)
         return content
 
