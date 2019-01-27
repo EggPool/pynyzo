@@ -18,10 +18,14 @@ class BlockRequest(MessageObject):
         """This replaces the various constructors from java, depending on the params"""
         super().__init__(app_log=app_log)
         if buffer:
+            offset = 10
             # buffer is the full buffer with timestamp and type, why the 10 offset.
-            self._start_height = struct.unpack(">Q", buffer[10:10+8])[0]  # Long, 8
-            self._end_height = struct.unpack(">Q", buffer[10+8:10+8+8])[0]
+            self._start_height = struct.unpack(">Q", buffer[offset:offset +8])[0]  # Long, 8
+            offset += 8
+            self._end_height = struct.unpack(">Q", buffer[offset:offset +8])[0]
+            offset += 8
             self._include_balance_list = struct.unpack("?", buffer[-1:])[0]
+            offset += 1
         else:
             self._start_height = start_height
             self._end_height = end_height
@@ -61,4 +65,3 @@ class BlockRequest(MessageObject):
         """Create the status message and print it"""
         app_log = base_app_log()
         app_log.info(self.to_string())
-

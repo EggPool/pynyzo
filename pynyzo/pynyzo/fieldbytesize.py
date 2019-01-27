@@ -1,5 +1,5 @@
 """
-from https://github.com/n-y-z-o/nyzoVerifier/blob/master/src/main/java/co/nyzo/verifier/FieldByteSize.java
+From https://github.com/n-y-z-o/nyzoVerifier/blob/master/src/main/java/co/nyzo/verifier/FieldByteSize.java
 """
 
 

@@ -1,8 +1,6 @@
 
 
 from pynyzo.messageobject import MessageObject
-from pynyzo.helpers import base_app_log
-from pynyzo.messagetype import MessageType
 from pynyzo.fieldbytesize import FieldByteSize
 from pynyzo.transaction import Transaction
 import json
@@ -56,7 +54,7 @@ class Block(MessageObject):
             # Same as original fromByteBuffer constructor
             self._height = struct.unpack(">Q", buffer[offset:offset +8])[0]  # Long, 8
             offset += 8
-            self._previous_block_hash = buffer[offset:offset +32]  # struct.unpack(">IIIIIIII", buffer[offset:offset +32])  # 32 bytes, 8 int
+            self._previous_block_hash = buffer[offset:offset +32]
             offset += 32
             self._start_timestamp = struct.unpack(">Q", buffer[offset:offset +8])[0]  # Long, 8
             offset += 8
@@ -65,7 +63,8 @@ class Block(MessageObject):
             number_of_transactions = struct.unpack(">I", buffer[offset:offset +4])[0]  # Int, 4
             offset += 4
             self._transactions = []
-            self.app_log.debug(f"Block {self._height}, {self._previous_block_hash.hex()}, {self._start_timestamp}, {self._verification_timestamp}, {number_of_transactions}")
+            self.app_log.debug(f"Block {self._height}, {self._previous_block_hash.hex()}, {self._start_timestamp}, "
+                               f"{self._verification_timestamp}, {number_of_transactions}")
             mv = memoryview(buffer)
             for i in range(number_of_transactions):
                 transaction = Transaction(buffer=mv[offset:])
@@ -81,7 +80,8 @@ class Block(MessageObject):
             # print("block offset", offset)
 
     def get_bytes(self, include_signature: bool=False) -> bytes:
-        pass
+        # TODO
+        self.app_log.error('TODO: Block.get_bytes')
         """
         int size = getByteSize();
 
@@ -102,7 +102,7 @@ class Block(MessageObject):
             buffer.put(verifierSignature);
         }
 
-return array;
+        return array;
         """
 
     def get_byte_size(self, include_signature: bool=False) -> int:
@@ -121,4 +121,5 @@ return array;
             'height': self._height, 'previous_block_hash': self._previous_block_hash.hex(),
             'start_timestamp': self._start_timestamp, 'verification_timestamp': self._verification_timestamp,
             'transactions': transactions, 'balance_list_hash': self._balance_list_hash.hex(),
-            'verifier_identifier': self._verifier_identifier.hex(), 'verifier_signature': self._verifier_signature.hex()}})
+            'verifier_identifier': self._verifier_identifier.hex(),
+            'verifier_signature': self._verifier_signature.hex()}})

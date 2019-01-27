@@ -1,8 +1,6 @@
 
 
 from pynyzo.messageobject import MessageObject
-from pynyzo.helpers import base_app_log
-from pynyzo.messagetype import MessageType
 from pynyzo.fieldbytesize import FieldByteSize
 import json
 import struct
@@ -52,7 +50,8 @@ class Transaction(MessageObject):
             offset += 8
             self._receiver_identifier = buffer[offset:offset + FieldByteSize.identifier]
             offset += FieldByteSize.identifier
-            self.app_log.debug(f"TX( {self._type}, {self._timestamp}, {self._amount}, {self._receiver_identifier.hex()}")
+            self.app_log.debug(f"TX( {self._type}, {self._timestamp}, {self._amount}, "
+                               f"{self._receiver_identifier.hex()}")
             if self._type == self.type_coin_generation:
                 self.app_log.error("TODO: Transaction.type_coin_generation")
             elif self._type in [self.type_seed, self.type_standard]:
@@ -67,7 +66,8 @@ class Transaction(MessageObject):
                 offset += sender_data_length
                 self._signature = buffer[offset:offset + FieldByteSize.signature]
                 offset += FieldByteSize.signature
-                self.app_log.debug(f"TX( {self._previous_hash_height}, {self._sender_identifier.hex()}, {sender_data_length}, {self._signature.hex()}")
+                self.app_log.debug(f"TX( {self._previous_hash_height}, {self._sender_identifier.hex()}, "
+                                   f"{sender_data_length}, {self._signature.hex()}")
                 # print("offset", offset)
             else:
                 self.app_log.warning(f"Unknown Transaction type: {self._type}")
@@ -119,6 +119,7 @@ class Transaction(MessageObject):
         return size
 
     def get_bytes(self, for_signing: bool=False):
+        # TODO
         self.app_log.error('TODO: Transaction.get_bytes')
 
     def to_json(self) -> str:

@@ -23,8 +23,8 @@ class Message(ABC):
     """Abstract Ancestor for all messages."""
 
     # slots for private vars, to spare ram
-    __slots__ = ('_applog', '_timestamp', '_type', '_content', '_sourceNodeIdentifier', '_sourceNodeSignature', '_valid',
-                 '_source_ip_address')
+    __slots__ = ('_applog', '_timestamp', '_type', '_content', '_sourceNodeIdentifier', '_sourceNodeSignature',
+                 '_valid', '_source_ip_address')
 
     # Static class variables
     maximumMessageLength = 4194304  # 4MB
@@ -36,8 +36,9 @@ class Message(ABC):
     # as a potential pool for random requests for the following types. This reduces strain on in-cycle verifiers.
     fullMeshMessageTypes = (MessageType.BlockRequest11, MessageType.BlockWithVotesRequest37)
 
-    def __init__(self, a_type: MessageType, content: MessageObject, app_log:object=None, sourceNodeIdentifier: bytes=None,
-                 sourceNodeSignature: bytes=None, source_ip_address: bytes=None, timestamp: int=0):
+    def __init__(self, a_type: MessageType, content: MessageObject, app_log:object=None,
+                 sourceNodeIdentifier: bytes=None, sourceNodeSignature: bytes=None, source_ip_address: bytes=None,
+                 timestamp: int=0):
         """This is the constructor for a new message originating from this system AND from the outside,
         depending on the params."""
         self.app_log = base_app_log(app_log)
@@ -51,23 +52,26 @@ class Message(ABC):
             self._sourceNodeIdentifier = config.PUBLIC_KEY.to_bytes()
             self._sourceNodeSignature = KeyUtil.sign_bytes(self.get_bytes_for_signing(), config.PRIVATE_KEY)
             # As a test, we can verify our sig before sending
-            # KeyUtil.signature_is_valid(self._sourceNodeSignature, self.get_bytes_for_signing(), config.PUBLIC_KEY.to_bytes())
-
+            """
+            KeyUtil.signature_is_valid(self._sourceNodeSignature, self.get_bytes_for_signing(), 
+                                       config.PUBLIC_KEY.to_bytes())
+            """
         else:
             # From another system
             self._timestamp = timestamp
             self._sourceNodeIdentifier = sourceNodeIdentifier
             self._sourceNodeSignature = sourceNodeSignature
             self._sourceIpAddress = source_ip_address
-            # self._valid = KeyUtil.signature_is_valid(sourceNodeSignature, self.get_bytes_for_signing(), sourceNodeIdentifier)
+            # self._valid = KeyUtil.signature_is_valid(sourceNodeSignature, self.get_bytes_for_signing(),
+            # sourceNodeIdentifier)
             self.valid = True
             # TODO: needs all the chain of get_bytes to validate; let suppose for now it is valid.
-            self.app_log.warning(f"TODO: Did NOT validate message from {ByteUtil.bytes_as_string_with_dashes(sourceNodeIdentifier)} of type {self._type.name}")
+            self.app_log.warning(f"TODO: Did NOT validate message from "
+                                 f"{ByteUtil.bytes_as_string_with_dashes(sourceNodeIdentifier)} "
+                                 f"of type {self._type.name}")
             if not self._valid:
-                self.app_log.warning(f"message from {ByteUtil.bytes_as_string_with_dashes(sourceNodeIdentifier)} of type {self._type.name} is not valid")  # Temp log
-                # TODO
-                # self.app_log.warning(f"message from {PrintUtil.compactPrintByteArray(sourceNodeIdentifier)} of type {self._type.name} is not valid, content is {content}"
-                # self.app_log.warning(f"signature is {ByteUtil.arrayAsStringWithDashes(sourceNodeSignature)}")
+                self.app_log.warning(f"message from {ByteUtil.bytes_as_string_with_dashes(sourceNodeIdentifier)} "
+                                     f"of type {self._type.name} is not valid")  # Temp log
 
     def to_string(self) -> str:
         """String view of the message for log/print"""
@@ -97,7 +101,7 @@ class Message(ABC):
     def sign(self, private_seed: bytes) -> None:
         # TODO
         # self.app_log.error("TODO: Message.sign()")
-        self._sourceNodeIdentifier = KeyUtil.private_to_public(private_seed.hex())  # KeyUtil.identifierForSeed(private_seed);
+        self._sourceNodeIdentifier = KeyUtil.private_to_public(private_seed.hex())
         self._sourceNodeSignature = KeyUtil.signBytes(self.get_bytes_for_signing(), private_seed)
 
     def get_bytes_for_transmission(self) -> bytes:
@@ -172,4 +176,3 @@ class Message(ABC):
         if message_type == MessageType.BlockResponse12:
             content = BlockResponse(buffer=buffer)
         return content
-

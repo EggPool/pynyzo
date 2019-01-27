@@ -1,10 +1,12 @@
 """
-Transcripted from https://github.com/n-y-z-o/nyzoVerifier/blob/master/src/main/java/co/nyzo/verifier/MessageObject.java
+Mostly transcripted from
+https://github.com/n-y-z-o/nyzoVerifier/blob/master/src/main/java/co/nyzo/verifier/MessageObject.java
 """
 
 from abc import ABC, abstractmethod
 from pynyzo.helpers import base_app_log
 import json
+
 
 class MessageObject(ABC):
 
@@ -15,12 +17,10 @@ class MessageObject(ABC):
 
     @abstractmethod
     def get_byte_size(self) -> int:
-        # return len(self._bytes)
         pass
 
     @abstractmethod
     def get_bytes(self) -> bytes:
-        #return self._bytes
         pass
 
     def to_json(self) -> str:
@@ -28,6 +28,7 @@ class MessageObject(ABC):
 
 
 class EmptyMessageObject(MessageObject):
+    """This one was added for convenience and avoid extra tests, not present in the java impl."""
 
     def get_byte_size(self) -> int:
         return 0

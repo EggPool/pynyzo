@@ -22,13 +22,20 @@ class BlockResponse(MessageObject):
         if buffer:
             # buffer is the full buffer with timestamp and type, why the 10 offset.
             self._initialBalanceList = None
-            if struct.unpack("?", buffer[10:10+1])[0]:
-                # TODO initialBalanceList = BalanceList(buffer=buffer);
+            offset = 10
+            has_balance = struct.unpack("?", buffer[offset:offset +1])[0]
+            offset += 1
+            if has_balance:
+                """
+                self._initial_balance_list = BalanceList(buffer=memoryview(buffer)[offset:])
+                offset += self._initialBalanceList.get_byte_size()
+                """
                 self.app_log.error("TODO: BlockResponse initialBalanceList")
             self._blocks = []
-            number_of_blocks = struct.unpack(">H", buffer[10+1:10+1+2])[0]  # short = 2 bytes
+
+            number_of_blocks = struct.unpack(">H", buffer[offset:offset +2])[0]  # short = 2 bytes
+            offset += 2
             print("number_of_blocks", number_of_blocks)
-            offset = 10+1+2
             mv = memoryview(buffer)
             for i in range(number_of_blocks):
                 block = Block(buffer=mv[offset:])
@@ -57,8 +64,7 @@ class BlockResponse(MessageObject):
 
     def get_bytes(self) -> bytes:
         result = b''
-        app_log = base_app_log()
-        app_log.error("TODO: BlockResponse.get_bytes")
+        self.app_log.error("TODO: BlockResponse.get_bytes")
         """
         result += struct.pack(">Q", self._start_height)  # 8
         result += struct.pack(">Q", self._end_height)  # 8
