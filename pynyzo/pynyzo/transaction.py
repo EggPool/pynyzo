@@ -42,10 +42,9 @@ class Transaction(MessageObject):
             pass
         else:
             # fromByteBuffer constructor
-
             # These are the fields contained in all transactions.
             offset = 0
-            self._type = struct.unpack(">B", buffer[offset:offset +1])[0]
+            self._type = struct.unpack(">B", buffer[offset:offset +1])[0]  # Byte
             offset += 1
             self._timestamp = struct.unpack(">Q", buffer[offset:offset +8])[0]  # Long, 8
             offset += 8
@@ -54,6 +53,24 @@ class Transaction(MessageObject):
             self._receiver_identifier = buffer[offset:offset + FieldByteSize.identifier]
             offset += FieldByteSize.identifier
             self.app_log.debug(f"TX( {self._type}, {self._timestamp}, {self._amount}, {self._receiver_identifier.hex()}")
+            if self._type == self.type_coin_generation:
+                self.app_log.error("TODO: Transaction.type_coin_generation")
+            elif self._type in [self.type_seed, self.type_standard]:
+                self._previous_hash_height = struct.unpack(">Q", buffer[offset:offset + 8])[0]  # Long, 8
+                offset += 8
+                self._previous_block_hash = b''  # TODO: get from BlockManager
+                self._sender_identifier = buffer[offset:offset + FieldByteSize.identifier]
+                offset += FieldByteSize.identifier
+                sender_data_length = min(32, struct.unpack(">B", buffer[offset:offset +1])[0])  # Byte
+                offset += 1
+                self._sender_data = buffer[offset:offset + sender_data_length]  # TODO: memoryview?
+                offset += sender_data_length
+                self._signature = buffer[offset:offset + FieldByteSize.signature]
+                offset += FieldByteSize.signature
+                self.app_log.debug(f"TX( {self._previous_hash_height}, {self._sender_identifier.hex()}, {sender_data_length}, {self._signature.hex()}")
+                # print("offset", offset)
+            else:
+                self.app_log.warning(f"Unknown Transaction type: {self._type}")
 
 
 
@@ -89,7 +106,7 @@ class Transaction(MessageObject):
         size = FieldByteSize.transactionType + FieldByteSize.timestamp + FieldByteSize.transactionAmount \
                + FieldByteSize.identifier
 
-        if type in [self.type_seed, self.type_standard]:
+        if self._type in [self.type_seed, self.type_standard]:
             if for_signing:
                 size += FieldByteSize.hash  # previous-block hash for signing
             else:
@@ -98,7 +115,7 @@ class Transaction(MessageObject):
             if for_signing:
                 size += FieldByteSize.hash  # sender data hash for signing
             else:
-                size += 1 + self._sender_data.length + FieldByteSize.signature  # length specifier + sender data + transaction signature
+                size += 1 + len(self._sender_data) + FieldByteSize.signature  # length specifier + sender data + transaction signature
         return size
 
     def get_bytes(self, for_signing: bool=False):

@@ -32,7 +32,7 @@ class BlockResponse(MessageObject):
             mv = memoryview(buffer)
             for i in range(number_of_blocks):
                 block = Block(buffer=mv[offset:])
-                offset += block.get_byte_size()
+                offset += block.get_byte_size(include_signature=True)
                 self._blocks.append(block)
         else:
             # This is for the node to fill TODO
@@ -52,7 +52,7 @@ class BlockResponse(MessageObject):
 
         byteSize += FieldByteSize.frozenBlockListLength
         for block in self._blocks:
-            byteSize += block.getByteSize()
+            byteSize += block.get_byte_size()
         return byteSize
 
     def get_bytes(self) -> bytes:

@@ -69,31 +69,16 @@ class Block(MessageObject):
             mv = memoryview(buffer)
             for i in range(number_of_transactions):
                 transaction = Transaction(buffer=mv[offset:])
-                offset += transaction.get_byte_size()
+                added = transaction.get_byte_size()
+                offset += added
                 self._transactions.append(transaction)
-
-    """
-        -long blockHeight = buffer.getLong();
-        -byte[] previousBlockHash = new byte[FieldByteSize.hash];
-        -buffer.get(previousBlockHash);
-        -long startTimestamp = buffer.getLong();
-        -long verificationTimestamp = buffer.getLong();
-        -int numberOfTransactions = buffer.getInt();
-        List<Transaction> transactions = new ArrayList<>();
-        for (int i = 0; i < numberOfTransactions; i++) {
-            transactions.add(Transaction.fromByteBuffer(buffer));
-        }
-
-        byte[] balanceListHash = new byte[FieldByteSize.hash];
-        buffer.get(balanceListHash);
-        byte[] verifierIdentifier = new byte[FieldByteSize.identifier];
-        buffer.get(verifierIdentifier);
-        byte[] verifierSignature = new byte[FieldByteSize.signature];
-        buffer.get(verifierSignature);
-
-        return new Block(blockHeight, previousBlockHash, startTimestamp, verificationTimestamp, transactions,
-balanceListHash, verifierIdentifier, verifierSignature);
-    """
+            self._balance_list_hash = buffer[offset:offset + FieldByteSize.hash]
+            offset += FieldByteSize.hash
+            self._verifier_identifier = buffer[offset:offset + FieldByteSize.identifier]
+            offset += FieldByteSize.identifier
+            self._verifier_signature = buffer[offset:offset + FieldByteSize.signature]
+            offset += FieldByteSize.signature
+            # print("block offset", offset)
 
     def get_bytes(self, include_signature: bool=False) -> bytes:
         pass
@@ -121,20 +106,11 @@ return array;
         """
 
     def get_byte_size(self, include_signature: bool=False) -> int:
-        pass
-        """
-        int size = FieldByteSize.blockHeight +           // height
-                FieldByteSize.hash +                     // previous-block hash
-                FieldByteSize.timestamp +                // start timestamp
-                FieldByteSize.timestamp +                // verification timestamp
-                4 +                                      // number of transactions
-                FieldByteSize.hash;                      // balance-list hash
-        for (Transaction transaction : transactions) {
-            size += transaction.getByteSize();
-        }
-        if (includeSignature) {
-            size += FieldByteSize.identifier + FieldByteSize.signature;
-        }
-
-        return size;
-        """
+        size = FieldByteSize.blockHeight + FieldByteSize.hash + FieldByteSize.timestamp  + FieldByteSize.timestamp \
+               + 4 + FieldByteSize.hash
+        for transaction in self._transactions:
+            size += transaction.get_byte_size()
+        if include_signature:
+            size += FieldByteSize.identifier + FieldByteSize.signature
+        # print("block size", size)
+        return size
