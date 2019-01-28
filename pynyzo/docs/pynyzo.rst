@@ -11,6 +11,30 @@ Subpackages
 Submodules
 ----------
 
+pynyzo.balancelist module
+-------------------------
+
+.. automodule:: pynyzo.balancelist
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pynyzo.balancelistitem module
+-----------------------------
+
+.. automodule:: pynyzo.balancelistitem
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pynyzo.block module
+-------------------
+
+.. automodule:: pynyzo.block
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 pynyzo.byteutil module
 ----------------------
 
@@ -39,6 +63,14 @@ pynyzo.fieldbytesize module
 ---------------------------
 
 .. automodule:: pynyzo.fieldbytesize
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pynyzo.hashutil module
+----------------------
+
+.. automodule:: pynyzo.hashutil
     :members:
     :undoc-members:
     :show-inheritance:
@@ -87,6 +119,14 @@ pynyzo.pynyzo module
 --------------------
 
 .. automodule:: pynyzo.pynyzo
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pynyzo.transaction module
+-------------------------
+
+.. automodule:: pynyzo.transaction
     :members:
     :undoc-members:
     :show-inheritance:
