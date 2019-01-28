@@ -6,8 +6,8 @@ import hashlib
 sys.path.append('../')
 from pynyzo.hashutil import HashUtil
 
-# TODO: tests for "emptyBytes = new byte[0];" fail
 # See https://github.com/n-y-z-o/nyzoVerifier/blob/master/src/main/java/co/nyzo/verifier/HashUtil.java
+
 
 def test_single_1(verbose=False):
     hello = b"hello"
@@ -18,11 +18,12 @@ def test_single_1(verbose=False):
 
 
 def test_single_2(verbose=False):
-    hello = b'\x00'
+    hello = b''
     hex = HashUtil.single_sha256(hello).hex()
     if verbose:
         print("hex", hex)
     assert hex == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+
 
 def test_double_1(verbose=False):
     hello = b"hello"
@@ -33,7 +34,7 @@ def test_double_1(verbose=False):
 
 
 def test_double_2(verbose=False):
-    hello = b'\x00'
+    hello = b''
     hex = HashUtil.double_sha256(hello).hex()
     if verbose:
         print("hex", hex)

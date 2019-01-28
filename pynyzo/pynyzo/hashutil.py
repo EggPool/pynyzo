@@ -15,6 +15,6 @@ class HashUtil:
 
     @staticmethod
     def single_sha256(data: bytes) -> bytes:
-        if data is None or len(data) == 0:
-            data = b'\x00'
+        if data is None:
+            data = b''
         return sha256(data).digest()
