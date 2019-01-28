@@ -21,16 +21,14 @@ class BlockResponse(MessageObject):
         super().__init__(app_log=app_log)
         if buffer:
             # buffer is the full buffer with timestamp and type, why the 10 offset.
-            self._initialBalanceList = None
+            self._initial_balance_list = None
             offset = 10
             has_balance = struct.unpack("?", buffer[offset:offset +1])[0]
             offset += 1
             if has_balance:
-                """
                 self._initial_balance_list = BalanceList(buffer=memoryview(buffer)[offset:])
-                offset += self._initialBalanceList.get_byte_size()
-                """
-                self.app_log.error("TODO: BlockResponse initialBalanceList")
+                offset += self._initial_balance_list.get_byte_size()
+                # self.app_log.error("TODO: BlockResponse initialBalanceList")
             self._blocks = []
 
             number_of_blocks = struct.unpack(">H", buffer[offset:offset +2])[0]  # short = 2 bytes
@@ -55,7 +53,7 @@ class BlockResponse(MessageObject):
     def get_byte_size(self) -> int:
         byteSize = FieldByteSize.booleanField  # boolean value indicating whether a balance list is included
         if self._initialBalanceList:
-            byteSize += self._initialBalanceList.getByteSize()
+            byteSize += self._initial_balance_list.getByteSize()
 
         byteSize += FieldByteSize.frozenBlockListLength
         for block in self._blocks:
@@ -76,15 +74,19 @@ class BlockResponse(MessageObject):
         return result
 
     def to_string(self) -> str:
-        balance = True if self._initialBalanceList else False
+        balance = True if self._initial_balance_list else False
         return f"[BlockResponse(balance={balance}, blocks={len(self._blocks)})]"
 
     def to_json(self) -> str:
-        balance = True if self._initialBalanceList else False
+        balance = True if self._initial_balance_list else False
+        if balance:
+            balance_list = json.loads(self._initial_balance_list.to_json())
+        else:
+            balance_list = None
         blocks = [json.loads(block.to_json()) for block in self._blocks]
-        return json.dumps({"message_type": MessageType.BlockRequest11.name, 'value': {
+        return json.dumps({"message_type": MessageType.BlockResponse12.name, 'value': {
             'balance': balance, 'blocks': blocks,
-            'initial_balance_list': self._initialBalanceList}})
+            'initial_balance_list': balance_list}})
 
     def print(self):
         """Create the status message and print it"""

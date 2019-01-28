@@ -4,8 +4,10 @@ from pynyzo.messageobject import MessageObject
 from pynyzo.helpers import base_app_log
 from pynyzo.balancelistitem import BalanceListItem
 from pynyzo.fieldbytesize import FieldByteSize
+from pynyzo.hashutil import HashUtil
 import json
 import struct
+import sys
 
 
 class BalanceList(MessageObject):
@@ -19,28 +21,32 @@ class BalanceList(MessageObject):
         super().__init__(app_log=app_log)
         if buffer:
             # buffer is the full buffer with timestamp and type, why the 10 offset.
-            offset = 10
+            offset = 0
             self._block_height = struct.unpack(">Q", buffer[offset:offset + 8])[0]  # long, 8
             offset += 8
             self._rollover_fees = struct.unpack(">B", buffer[offset:offset + 1])[0]  # byte
             offset += 1
-            number_of_previous_verifiers = min(block_height, 9)
+            number_of_previous_verifiers = min(self._block_height, 9)
+            self.app_log.debug(f"BalanceList({self._block_height}, {self._rollover_fees}, {number_of_previous_verifiers})")
             self._previous_verifiers = []
             for i in range(number_of_previous_verifiers):
                 # We could use a memoryview if perf /ram was an issue
                 self._previous_verifiers.append(buffer[offset:offset + FieldByteSize.identifier])
                 offset += FieldByteSize.identifier
             number_of_pairs = struct.unpack(">I", buffer[offset:offset + 4])[0]  # int, 4
-            offset += 8
+            offset += 4
+            # print("number_of_pairs", number_of_pairs)
             self._items = []
             for i in range(number_of_pairs):
                 identifier = buffer[offset:offset + FieldByteSize.identifier]
                 offset += FieldByteSize.identifier
                 balance = struct.unpack(">Q", buffer[offset:offset + 8])[0]  # long, 8
                 offset += 8
-                blocks_until_fee = struct.unpack(">B", buffer[offset:offset + 1])[0]  # byte
-                offset += 1
-                self._items.append(BalanceListItem(identifier, balance, blocks_until_fee))
+                blocks_until_fee = struct.unpack(">H", buffer[offset:offset + 2])[0]  # Short, 2 bytes
+                offset += 2
+                item = BalanceListItem(identifier, balance, blocks_until_fee)
+                # print(item.to_json())
+                self._items.append(item)
         else:
             self._block_height = block_height
             self._rollover_fees = rollover_fees
@@ -79,7 +85,8 @@ class BalanceList(MessageObject):
         return f"[BalanceList: height={self._block_height}, hash={self.get_hash().hex()}]"
 
     def to_json(self) -> str:
-        items = [json.loads(item.to_json()) for item in self._items]
+        # Do not add explicit keys for balance items, too verbose.
+        items = {item.get_identifier().hex(): [item.get_balance(), item.get_blocks_until_fee()] for item in self._items}
         previous_verifiers = [verifier.hex() for verifier in self._previous_verifiers]
         return json.dumps({"message_type": "BalanceList", 'value': {
             'height': self._block_height, 'rollover_fees': self._rollover_fees,
