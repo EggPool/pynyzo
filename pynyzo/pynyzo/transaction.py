@@ -65,7 +65,10 @@ class Transaction(MessageObject):
             if self._type == self.type_coin_generation:
                 # self.app_log.error("TODO: Transaction.type_coin_generation")
                 self._previous_hash_height = -1
-                self._previous_block_hash = None
+                self._previous_block_hash = b''
+                self._sender_identifier = b''
+                self._sender_data = b''
+                self._signature = b''
             elif self._type in [self.type_seed, self.type_standard]:
                 self._previous_hash_height = struct.unpack(">Q", buffer[offset:offset + 8])[0]  # Long, 8
                 offset += 8
