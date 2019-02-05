@@ -74,15 +74,23 @@ class BalanceList(MessageObject):
                + bytes_per_item * len(self._items)
 
     def get_bytes(self) -> bytes:
-        result = b''
-        self.app_log.error("TODO: BalanceList.get_bytes")
-        return result
+        result = []
+        result.append(struct.pack(">Q", self._block_height))  # Long
+        result.append(struct.pack(">B", self._rollover_fees))  # byte
+        for verifier in self._previous_verifiers:
+            result.append(verifier)
+        result.append(struct.pack(">I", len(self._items)))  # int, 4
+        for item in self._items:
+            result.append(item.get_identifier())
+            result.append(struct.pack(">Q", item.get_balance()))  # Long
+            result.append(struct.pack(">H", item.get_blocks_until_fee()))  # short
+        return b''.join(result)
 
     def get_hash(self) -> bytes:
         return HashUtil.double_sha256(self.get_bytes())
 
     def to_string(self) -> str:
-        return f"[BalanceList: height={self._block_height}, hash={self.get_hash().hex()}]"
+        return f"[BalanceList: height={self._block_height}, count={len(self._items)} hash={self.get_hash().hex()}]"
 
     def to_json(self) -> str:
         # Do not add explicit keys for balance items, too verbose.

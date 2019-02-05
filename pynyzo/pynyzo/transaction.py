@@ -63,7 +63,9 @@ class Transaction(MessageObject):
             self.app_log.debug(f"TX( {self._type}, {self._timestamp}, {self._amount}, "
                                f"{self._receiver_identifier.hex()}")
             if self._type == self.type_coin_generation:
-                self.app_log.error("TODO: Transaction.type_coin_generation")
+                # self.app_log.error("TODO: Transaction.type_coin_generation")
+                self._previous_hash_height = -1
+                self._previous_block_hash = None
             elif self._type in [self.type_seed, self.type_standard]:
                 self._previous_hash_height = struct.unpack(">Q", buffer[offset:offset + 8])[0]  # Long, 8
                 offset += 8
@@ -131,6 +133,11 @@ class Transaction(MessageObject):
         self.app_log.error('TODO: Transaction.get_bytes')
 
     def to_json(self) -> str:
+        if self._type == self.type_coin_generation:
+            return json.dumps({"message_type": "Transaction", 'value': {
+                'type': self._type, 'timestamp': self._timestamp, 'amount': self._amount,
+                'receiver_identifier': self._receiver_identifier.hex()}})
+
         return json.dumps({"message_type": "Transaction", 'value': {
             'type': self._type,'timestamp': self._timestamp, 'amount': self._amount,
             'receiver_identifier': self._receiver_identifier.hex(), 'previous_hash_height': self._previous_hash_height,

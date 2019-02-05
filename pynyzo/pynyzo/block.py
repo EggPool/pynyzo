@@ -4,9 +4,12 @@ from pynyzo.messageobject import MessageObject
 from pynyzo.fieldbytesize import FieldByteSize
 from pynyzo.transaction import Transaction
 from pynyzo.byteutil import ByteUtil
+from pynyzo.balancelist import BalanceList
+from pynyzo.hashutil import HashUtil
 import json
 import struct
-from bs4 import BeautifulSoup
+# import sys
+# from bs4 import BeautifulSoup
 
 from enum import Enum
 
@@ -126,6 +129,12 @@ class Block(MessageObject):
         # print("block size", size)
         return size
 
+    def get_hash(self) -> bytes:
+        return HashUtil.double_sha256(self._verifier_signature)
+
+    def to_string(self) -> str:
+        return f"[Block: height={self._height}, nb_tx={len(self._transactions)} hash={self.get_hash().hex()}]"
+
     def to_json(self) -> str:
         transactions = [json.loads(tx.to_json()) for tx in self._transactions]
         return json.dumps({"message_type": "Block", 'value': {
@@ -136,10 +145,11 @@ class Block(MessageObject):
             'verifier_signature': self._verifier_signature.hex()}})
 
     @staticmethod
-    def from_nyzo_html(html:str) -> object:
-        """Decode html and returns a block object"""
-        # TODO - No more useful since nyzoblocks availability.
-        print("TODO: Block.from_nyzo_html(html)")
+    def from_nyzo_html(html:str):
+        """Decode html and returns a block object
+        No more useful since nyzoblocks availability."""
+        print("DEPRECATED: Block.from_nyzo_html(html)")
+        """
         bs = BeautifulSoup(html, features="html.parser")
 
         height = int(bs.find('h1').text.replace('Nyzo block ', ''))
@@ -170,12 +180,11 @@ class Block(MessageObject):
             receiver_id = ByteUtil.string_to_bytes(test.pop().replace('receiver ID: ', ''))
             if tx_type in [1, 2]:
                 previous_height = 0
-                """
-                private long previousHashHeight;     // 8 bytes; 64-bit index of the block height of the previous-block hash
-    private byte[] previousBlockHash;    // 32 bytes (SHA-256 of a recent block in the chain)
-    private byte[] senderIdentifier;     // 32 bytes (256-bit public key of the sender)
-    private byte[] senderData;           // up to 32 bytes
-    private byte[] signature; """
+                # private long previousHashHeight;     // 8 bytes; 64-bit index of the block height of the previous-block hash
+                # private byte[] previousBlockHash;    // 32 bytes (SHA-256 of a recent block in the chain)
+                # private byte[] senderIdentifier;     // 32 bytes (256-bit public key of the sender)
+                # private byte[] senderData;           // up to 32 bytes
+                # private byte[] signature;
                 pass
             else:
                 pass
@@ -185,3 +194,34 @@ class Block(MessageObject):
                  verification_timestamp=verif_ts, balance_list_hash=balance_hash,
                  verifier_identifier=verifier_id, verifier_signature=verifier_signature,transactions=transactions)
         return block
+        """
+
+    @staticmethod
+    def from_nyzoblock(filename: str, verbose=False) -> list:
+        """Read a nyzoblock and returns a list of blocks"""
+        result = []
+        with open(filename, 'rb') as file:
+            buffer = memoryview(file.read())
+        offset = 0
+        num_blocks = struct.unpack(">H", buffer[offset:offset + 2])[0]  # Short, 2 bytes
+        offset += 2
+        if verbose:
+            print(f"Num blocks {num_blocks}")
+        last_block_height = None
+        for i in range(num_blocks):
+            block = Block(buffer=buffer[offset:])
+            if last_block_height is None:
+                last_block_height = block._height
+            offset += block.get_byte_size(include_signature=True)
+            if verbose:
+                print(block.to_string())
+            # print(block.to_json())
+            if i == 0 or last_block_height != block._height - 1:
+                # We have a balance
+                balance = BalanceList(buffer=buffer[offset:])
+                offset += balance.get_byte_size()
+                if verbose:
+                    print(f"Balance {balance.to_string()}")
+                # print(balance.to_json())
+            last_block_height = block._height
+        return result
