@@ -34,10 +34,20 @@ class Transaction(MessageObject):
     private byte[] signature; 
     """
 
-    def __init__(self, buffer: bytes=None, app_log=None):
+    def __init__(self, buffer: bytes=None, type: int=0, timestamp: int=0, amount: int=0,
+                 receiver_identifier: bytes=None, previous_hash_height: int=0, previous_block_hash: bytes=None,
+                 sender_identifier: bytes=None, sender_data: bytes=None, signature: bytes=None, app_log=None):
         super().__init__(app_log=app_log)
         if buffer is None:
-            pass
+            self._type = type
+            self._timestamp = timestamp
+            self._amount = amount
+            self._receiver_identifier = receiver_identifier
+            self._previous_hash_height = previous_hash_height
+            self._previous_block_hash = previous_block_hash
+            self._sender_identifier = sender_identifier
+            self._sender_data = sender_data
+            self._signature = signature
         else:
             # fromByteBuffer constructor
             # These are the fields contained in all transactions.
@@ -71,8 +81,6 @@ class Transaction(MessageObject):
                 # print("offset", offset)
             else:
                 self.app_log.warning(f"Unknown Transaction type: {self._type}")
-
-
 
     def get_type(self):
         return self._type

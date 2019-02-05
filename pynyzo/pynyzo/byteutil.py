@@ -13,3 +13,8 @@ class ByteUtil:
     def bytes_as_string_with_dashes(buffer: bytes) -> str:
         hexa = buffer.hex()
         return '-'.join(split_by_len(hexa, 8))
+
+    @staticmethod
+    def string_to_bytes(string: str) -> bytes:
+        string = string.replace('-', '')
+        return bytes.fromhex(string)

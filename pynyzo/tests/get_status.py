@@ -38,7 +38,7 @@ if __name__ == "__main__":
     elif args.action == 'block':
         # test. Use a block high enough so it's not frozen.
         # TODO: get last block from  reference verifiers
-        request = BlockRequest(start_height=1695400, end_height=1695400+2, include_balance_list=False, app_log=app_log)
+        request = BlockRequest(start_height=1695400, end_height=1695400+2, include_balance_list=True, app_log=app_log)
         message = Message(MessageType.BlockRequest11, request, app_log=app_log)
         res = connection.fetch(message)
         print(res.to_json())

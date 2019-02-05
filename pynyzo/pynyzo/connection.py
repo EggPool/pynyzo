@@ -148,6 +148,8 @@ class Connection(object):
             self.sdef.close()
         except Exception as e:
             pass
+        finally:
+            self.sdef = None
 
     def fetch_buffer(self, message: Message, identifier: bytes=b'') -> bytes:
         """From Message - fetch bin buffer"""

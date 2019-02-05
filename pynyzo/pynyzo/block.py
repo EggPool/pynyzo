@@ -3,8 +3,10 @@
 from pynyzo.messageobject import MessageObject
 from pynyzo.fieldbytesize import FieldByteSize
 from pynyzo.transaction import Transaction
+from pynyzo.byteutil import ByteUtil
 import json
 import struct
+from bs4 import BeautifulSoup
 
 from enum import Enum
 
@@ -44,12 +46,21 @@ class Block(MessageObject):
     private CycleInformation cycleInformation = null;
     """
 
-    def __init__(self, height: int=0, previous_block_hash: bytes=None, start_timestamp: int=0, transactions:list=None,
-                 balance_list_hash:bytes=None, buffer: bytes=None, offset=0, app_log=None):
+    def __init__(self, height: int=0, previous_block_hash: bytes=None, start_timestamp: int=0,
+                 verification_timestamp: int=0, transactions: list=None, balance_list_hash: bytes=None,
+                 verifier_identifier: bytes=None, verifier_signature: bytes=None,
+                 buffer: bytes=None, offset=0, app_log=None):
         super().__init__(app_log=app_log)
         if buffer is None:
             # TODO
-            pass
+            self._height = height
+            self._previous_block_hash = previous_block_hash
+            self._start_timestamp = start_timestamp
+            self._verification_timestamp = verification_timestamp
+            self._transactions = transactions
+            self._balance_list_hash = balance_list_hash
+            self._verifier_identifier = verifier_identifier
+            self._verifier_signature = verifier_signature
         else:
             # Same as original fromByteBuffer constructor
             self._height = struct.unpack(">Q", buffer[offset:offset +8])[0]  # Long, 8
@@ -123,3 +134,54 @@ class Block(MessageObject):
             'transactions': transactions, 'balance_list_hash': self._balance_list_hash.hex(),
             'verifier_identifier': self._verifier_identifier.hex(),
             'verifier_signature': self._verifier_signature.hex()}})
+
+    @staticmethod
+    def from_nyzo_html(html:str) -> object:
+        """Decode html and returns a block object"""
+        # TODO - No more useful since nyzoblocks availability.
+        print("TODO: Block.from_nyzo_html(html)")
+        bs = BeautifulSoup(html, features="html.parser")
+
+        height = int(bs.find('h1').text.replace('Nyzo block ', ''))
+
+        test = bs.find_all('p')
+        test = [item.text for item in test]
+
+        hash = ByteUtil.string_to_bytes(test.pop(0))
+        cycle_len = test.pop(0)  # unused
+        previous_hash = ByteUtil.string_to_bytes(test.pop(0))
+        start_ts = test.pop(0).split(' ')
+        start_ts = int(float(start_ts[0])*1000)
+        end_ts = test.pop(0).split(' ')
+        end_ts = int(float(end_ts[0])*1000)  # not part of the signed data
+        verif_ts = test.pop(0).split(' ')
+        verif_ts = int(float(verif_ts[0])*1000)  # not part of the signed data
+        verifier_signature = ByteUtil.string_to_bytes(test.pop().replace('signature: ', ''))
+        verifier_id = ByteUtil.string_to_bytes(test.pop().replace('ID: ', ''))
+        void = test.pop()
+        balance_hash = ByteUtil.string_to_bytes(test.pop().replace('hash: ', ''))
+        # only txs remain
+        print(test)
+        while len(test):
+            tx_type = int(test.pop(0).split(' ')[0])
+            tx_ts = test.pop(0).split(' ')
+            tx_ts = int(float(tx_ts[1])*1000)
+            tx_amount =  float(test.pop(0)[8:])* Transaction.micronyzo_multiplier_ratio
+            receiver_id = ByteUtil.string_to_bytes(test.pop().replace('receiver ID: ', ''))
+            if tx_type in [1, 2]:
+                previous_height = 0
+                """
+                private long previousHashHeight;     // 8 bytes; 64-bit index of the block height of the previous-block hash
+    private byte[] previousBlockHash;    // 32 bytes (SHA-256 of a recent block in the chain)
+    private byte[] senderIdentifier;     // 32 bytes (256-bit public key of the sender)
+    private byte[] senderData;           // up to 32 bytes
+    private byte[] signature; """
+                pass
+            else:
+                pass
+
+        transactions = []
+        block = Block(height=height, previous_block_hash=previous_hash, start_timestamp=start_ts,
+                 verification_timestamp=verif_ts, balance_list_hash=balance_hash,
+                 verifier_identifier=verifier_id, verifier_signature=verifier_signature,transactions=transactions)
+        return block
