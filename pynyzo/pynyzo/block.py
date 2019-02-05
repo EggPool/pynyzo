@@ -210,6 +210,7 @@ class Block(MessageObject):
         last_block_height = None
         for i in range(num_blocks):
             block = Block(buffer=buffer[offset:])
+            result.append(block)
             if last_block_height is None:
                 last_block_height = block._height
             offset += block.get_byte_size(include_signature=True)
