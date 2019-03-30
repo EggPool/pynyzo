@@ -40,11 +40,11 @@ setup(
     include_package_data=True,
     keywords='pynyzo, nyzo, python, crypto',
     name='pynyzo',
-    packages=find_packages(include=['pynyzo']),
+    packages=find_packages(include=['pynyzo','pynyzo.messages']),
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/EggPool/pynyzo',
-    version='0.0.7',
+    version='0.0.8',
     zip_safe=False,
 )
