@@ -6,6 +6,7 @@ from pynyzo.transaction import Transaction
 from pynyzo.byteutil import ByteUtil
 from pynyzo.balancelist import BalanceList
 from pynyzo.hashutil import HashUtil
+
 import json
 import struct
 # import sys
@@ -29,7 +30,7 @@ class Block(MessageObject):
 
     __slots__ = ('_height', '_previous_block_hash', '_start_timestamp', '_verification_timestamp', '_transactions',
                  '_balance_list_hash', '_verifier_identifier', '_verifier_signature', '_continuity_state',
-                 '_signature_state', '_cycle_information')
+                 '_signature_state', '_cycle_information', '_blockchain_version')
     """
     private long height;                           // 8 bytes; 64-bit integer block height from the Genesis block,
                                                    // which has a height of 0
@@ -66,7 +67,8 @@ class Block(MessageObject):
             self._verifier_signature = verifier_signature
         else:
             # Same as original fromByteBuffer constructor
-            self._height = struct.unpack(">Q", buffer[offset:offset +8])[0]  # Long, 8
+            self._height =  struct.unpack(">Q", buffer[offset:offset +8])[0]  # Long, 8
+            self._blockchain_version, self._height = (0xffff000000000000 & self._height) >> (6 * 8), 0x0000ffffffffffff & self._height
             offset += 8
             self._previous_block_hash = buffer[offset:offset +32]
             offset += 32
@@ -80,8 +82,10 @@ class Block(MessageObject):
             self.app_log.debug(f"Block {self._height}, {self._previous_block_hash.hex()}, {self._start_timestamp}, "
                                f"{self._verification_timestamp}, {number_of_transactions}")
             mv = memoryview(buffer)
+            balance_list_cycle_transaction = True if self._blockchain_version > 1 else False
+            #print("chain version", self._blockchain_version)
             for i in range(number_of_transactions):
-                transaction = Transaction(buffer=mv[offset:])
+                transaction = Transaction(buffer=mv[offset:], balance_list_cycle_transaction=balance_list_cycle_transaction)
                 added = transaction.get_byte_size()
                 offset += added
                 self._transactions.append(transaction)
@@ -91,7 +95,7 @@ class Block(MessageObject):
             offset += FieldByteSize.identifier
             self._verifier_signature = buffer[offset:offset + FieldByteSize.signature]
             offset += FieldByteSize.signature
-            # print("block offset", offset)
+        #exit()
 
     def get_bytes(self, include_signature: bool=False) -> bytes:
         # TODO
@@ -216,13 +220,11 @@ class Block(MessageObject):
             offset += block.get_byte_size(include_signature=True)
             if verbose:
                 print(block.to_string())
-            # print(block.to_json())
             if i == 0 or last_block_height != block._height - 1:
                 # We have a balance
                 balance = BalanceList(buffer=buffer[offset:])
                 offset += balance.get_byte_size()
                 if verbose:
                     print(f"Balance {balance.to_string()}")
-                # print(balance.to_json())
             last_block_height = block._height
         return result
