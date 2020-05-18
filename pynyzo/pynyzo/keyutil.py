@@ -54,6 +54,15 @@ class KeyUtil:
         return signing_key, verifying_key
 
     @staticmethod
+    def get_from_private_seed(seed: str):
+        """returns priv and pub key - as object - from an hex seed"""
+        seed = seed.replace('-', '').encode('utf-8').strip()
+        signing_key = ed25519.SigningKey(seed, encoding="hex")
+        verifying_key = signing_key.get_verifying_key()
+        return signing_key, verifying_key
+
+
+    @staticmethod
     def save_to_private_seed_file(filename: str, key: bytes) -> None:
         """Saves the privkey to the nyzo formatted file"""
         nyzo_format = ByteUtil.bytes_as_string_with_dashes(key)

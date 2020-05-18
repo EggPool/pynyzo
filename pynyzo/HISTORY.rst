@@ -2,6 +2,13 @@
 History
 =======
 
+0.0.9 (2019-03-30)
+------------------
+
+Support for blockchain v1 & v2
+Support for cycle transactions
+
+
 0.0.8 (2019-03-30)
 ------------------
 

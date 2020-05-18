@@ -4,4 +4,4 @@
 
 __author__ = """EggdraSyl"""
 __email__ = 'dev@eggpool.net'
-__version__ = '0.0.1'
+__version__ = '0.0.9'
