@@ -95,7 +95,7 @@ class Transaction(MessageObject):
                     self._cycle_signature_transactions = []
                     number_of_cycle_signatures = struct.unpack(">I", buffer[offset:offset +4])[0]  # Int, 4
                     offset += 4
-                    #print("number_of_cycle_signatures", number_of_cycle_signatures)
+                    # print("number_of_cycle_signatures", number_of_cycle_signatures)
 
                     if not balance_list_cycle_transaction:
                         for i in range(number_of_cycle_signatures):
@@ -246,6 +246,7 @@ class Transaction(MessageObject):
             # blockchain at a later date by replacing it with its double-SHA-256 without compromising the signature
             # integrity.
             if for_signing:
+                # print("double sha", HashUtil.double_sha256(self._sender_data).hex())
                 result.append(HashUtil.double_sha256(self._sender_data))
             else:
                 result.append(struct.pack(">B", len(self._sender_data)))  # byte

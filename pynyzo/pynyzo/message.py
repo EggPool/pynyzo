@@ -66,9 +66,10 @@ class Message(ABC):
             # sourceNodeIdentifier)
             self.valid = True
             # TODO: needs all the chain of get_bytes to validate; let suppose for now it is valid.
-            self.app_log.warning(f"TODO: Did NOT validate message from "
-                                 f"{ByteUtil.bytes_as_string_with_dashes(sourceNodeIdentifier)} "
-                                 f"of type {self._type.name}")
+            if config.VERBOSE:
+                self.app_log.warning(f"TODO: Did NOT validate message from "
+                                     f"{ByteUtil.bytes_as_string_with_dashes(sourceNodeIdentifier)} "
+                                     f"of type {self._type.name}")
             if not self._valid:
                 self.app_log.warning(f"message from {ByteUtil.bytes_as_string_with_dashes(sourceNodeIdentifier)} "
                                      f"of type {self._type.name} is not valid")  # Temp log

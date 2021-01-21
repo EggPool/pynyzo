@@ -11,7 +11,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['tornado', 'ed25519']
+requirements = ['tornado', 'ed25519', 'requests']
 
 setup_requirements = ['pytest-runner', ]
 
@@ -45,6 +45,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/EggPool/pynyzo',
-    version='0.0.9',
+    version='0.0.10',
     zip_safe=False,
 )

@@ -2,6 +2,15 @@
 History
 =======
 
+0.0.10 (2021-01-21)
+------------------
+
+New "NyzoClient" helper
+Get frozen edge from client
+Generates tx and forwards to cycle
+Query tx
+Associated tests
+
 0.0.9 (2019-03-30)
 ------------------
 
