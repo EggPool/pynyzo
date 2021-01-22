@@ -109,7 +109,7 @@ class NyzoClient:
         else:
             return address, bytes.fromhex(address_raw)
 
-    def send(self, recipient, amount: float = 0, data: str = "", key_: str = ""):
+    def send(self, recipient: str, amount: float = 0, data: str = "", key_: str = ""):
         """
         Send Nyzo with data string to a RECIPIENT.
         """
@@ -147,7 +147,7 @@ class NyzoClient:
         # Send the tx
         url = "{}/forwardTransaction?transaction={}&action=run".format(self.client, tx__)
         res = get(url)
-        print(res.text)
+        # print(res.text)
         temp = self.fake_table_to_list(res.text)
         # print(temp)
         temp = temp[0]

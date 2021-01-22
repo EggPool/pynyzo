@@ -2,8 +2,14 @@
 History
 =======
 
+0.0.11 (2021-01-22)
+-------------------
+
+Debug trace removed, adjust requirements.
+
+
 0.0.10 (2021-01-21)
-------------------
+-------------------
 
 New "NyzoClient" helper
 Get frozen edge from client
