@@ -7,7 +7,8 @@ Most dupped from Nyzocli since it's likely to be required by more apps.
 
 from requests import get
 import re
-from time import time
+from time import time, sleep
+from asyncio import sleep as async_sleep
 from typing import Union, Tuple
 from nyzostrings.nyzostringencoder import NyzoStringEncoder
 from nyzostrings.nyzostringtransaction import NyzoStringTransaction
@@ -32,7 +33,8 @@ class NyzoClient:
             print(f"get_frozen, exception {e}")
         return data
 
-    def fake_table_to_list(self, html: str):
+    @staticmethod
+    def fake_table_to_list(html: str):
         #
         test_header = re.search(r'<div class="header-row">([^"]*)</div><div class="data-row">', html)
         headers = []
@@ -67,7 +69,8 @@ class NyzoClient:
                 values[0]["error"] = error_content
         return values
 
-    def fake_table_frozen_to_dict(self, html: str):
+    @staticmethod
+    def fake_table_frozen_to_dict(html: str):
         """Neither clean nor future proof, but that's the way client sends back the data"""
         try:
             height = re.search(r'<div>height</div><div>([^<]*)</div>', html).groups()[0]
@@ -89,7 +92,8 @@ class NyzoClient:
                   "timestamp": timestamp, "distance": distance}
         return values
 
-    def normalize_address(self, address: str, as_hex: bool = False) -> Union[Tuple[str, str], Tuple[str, bytes]]:
+    @staticmethod
+    def normalize_address(address: str, as_hex: bool = False) -> Union[Tuple[str, str], Tuple[str, bytes]]:
         """Takes an address as raw byte or id__ and provides both formats back"""
         try:
             # convert recipient to raw if provided as id__
@@ -97,7 +101,7 @@ class NyzoClient:
                 address_raw = NyzoStringEncoder.decode(address).get_bytes().hex()
             else:
                 raise RuntimeWarning("Not an id__")
-        except:
+        except Exception:
             address_raw = re.sub(r"[^0-9a-f]", "", address.lower())
             # print(address_raw)
             if len(address_raw) != 64:
@@ -154,6 +158,75 @@ class NyzoClient:
         # Add tx to data
         temp["tx__"] = tx__
         return temp
+
+    def safe_send(self, recipient: str, amount: float = 0, data: str = "", key_: str = "", max_tries=5, verbose=False):
+        """
+        Send Nyzo with data string to a RECIPIENT.
+        Returns only after block is frozen or max_tries
+        """
+        attempt = 1
+        while attempt <= max_tries:
+            if verbose:
+                print(f"Sending, try {attempt}")
+            frozen = int(self.get_frozen().get('height', 0))
+            res = self.send(recipient, amount, data, key_)
+            if not res.get("forwarded", False):
+                if verbose:
+                    print(f"Not forwarded")
+                error = res.get("error", [])
+                notice = res.get("notice", [])
+                sent = {"sent": False, "try": max_tries, "error": error, "notice": notice}
+                return sent
+            # Was forwarded, wait for freeze.
+            while frozen < int(res['block height']):
+                if verbose:
+                    print(f"Waiting for frozen edge ({frozen}) to reach {res['block height']}")
+                sleep(10)
+                frozen = int(self.get_frozen().get('height', 0))
+            print(f"Frozen edge is now {frozen}, querying tx")
+            res_tx = self.query_tx(res['tx__'])
+            if int(res_tx.get("height", 0)) == int(res['block height']):
+                # transaction was frozen, return
+                sent = {"sent": True, "height": int(res['block height']), "tx__": res['tx__'], "try": attempt}
+                return sent
+            attempt += 1
+        sent = {"sent": False, "try": max_tries, "error": "", "notice": f"Forwarded but still not in chain after {max_tries} attempts."}
+        return sent
+
+    async def async_safe_send(self, recipient: str, amount: float = 0, data: str = "", key_: str = "", max_tries=5, verbose=False):
+        """
+        Send Nyzo with data string to a RECIPIENT.
+        Returns only after block is frozen or max_tries
+        Async version
+        """
+        attempt = 1
+        while attempt <= max_tries:
+            if verbose:
+                print(f"Sending, try {attempt}")
+            frozen = int(self.get_frozen().get('height', 0))
+            res = self.send(recipient, amount, data, key_)
+            if not res.get("forwarded", False):
+                if verbose:
+                    print(f"Not forwarded")
+                error = res.get("error", [])
+                notice = res.get("notice", [])
+                sent = {"sent": False, "try": max_tries, "error": error, "notice": notice}
+                return sent
+            # Was forwarded, wait for freeze.
+            while frozen < int(res['block height']):
+                if verbose:
+                    print(f"Waiting for frozen edge ({frozen}) to reach {res['block height']}")
+                await async_sleep(10)
+                frozen = int(self.get_frozen().get('height', 0))
+            print(f"Frozen edge is now {frozen}, querying tx")
+            res_tx = self.query_tx(res['tx__'])
+            if int(res_tx.get("height", 0)) == int(res['block height']):
+                # transaction was frozen, return
+                sent = {"sent": True, "height": int(res['block height']), "tx__": res['tx__'], "try": attempt}
+                return sent
+            attempt += 1
+        sent = {"sent": False, "try": max_tries, "error": "", "notice": f"Forwarded but still not in chain after {max_tries} attempts."}
+        return sent
 
     def query_tx(self, tx_: str = ""):
         """
