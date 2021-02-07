@@ -170,11 +170,14 @@ class NyzoClient:
                 print(f"Sending, try {attempt}")
             frozen = int(self.get_frozen().get('height', 0))
             res = self.send(recipient, amount, data, key_)
+            #print(res)
+            notice = res.get("notice", ("",))
+            may_not_be_approved = "may not be approved" in notice[0] if len(notice) else False
+            #print(may_not_be_approved)
             if str(res.get("forwarded", "false")).lower() == "false":
                 if verbose:
                     print(f"Not forwarded")
                 error = res.get("error", [])
-                notice = res.get("notice", [])
                 sent = {"sent": False, "try": attempt, "error": error, "notice": notice}
                 return sent
             # Was forwarded, wait for freeze.
@@ -188,6 +191,10 @@ class NyzoClient:
             if int(res_tx.get("height", 0)) == int(res['block height']):
                 # transaction was frozen, return
                 sent = {"sent": True, "height": int(res['block height']), "tx__": res['tx__'], "try": attempt}
+                return sent
+            if may_not_be_approved:
+                error = res.get("error", [])
+                sent = {"sent": False, "try": attempt, "error": error, "notice": notice}
                 return sent
             attempt += 1
         sent = {"sent": False, "try": max_tries, "error": "", "notice": f"Forwarded but still not in chain after {max_tries} attempts."}
@@ -205,11 +212,12 @@ class NyzoClient:
                 print(f"Sending, try {attempt}")
             frozen = int(self.get_frozen().get('height', 0))
             res = self.send(recipient, amount, data, key_)
+            notice = res.get("notice", ("",))
+            may_not_be_approved = "may not be approved" in notice[0] if len(notice) else False
             if str(res.get("forwarded", "false")).lower() == "false":
                 if verbose:
                     print(f"Not forwarded")
                 error = res.get("error", [])
-                notice = res.get("notice", [])
                 sent = {"sent": False, "try": max_tries, "error": error, "notice": notice}
                 return sent
             # Was forwarded, wait for freeze.
@@ -223,6 +231,10 @@ class NyzoClient:
             if int(res_tx.get("height", 0)) == int(res['block height']):
                 # transaction was frozen, return
                 sent = {"sent": True, "height": int(res['block height']), "tx__": res['tx__'], "try": attempt}
+                return sent
+            if may_not_be_approved:
+                error = res.get("error", [])
+                sent = {"sent": False, "try": attempt, "error": error, "notice": notice}
                 return sent
             attempt += 1
         sent = {"sent": False, "try": max_tries, "error": "", "notice": f"Forwarded but still not in chain after {max_tries} attempts."}
