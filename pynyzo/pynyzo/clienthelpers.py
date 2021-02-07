@@ -170,12 +170,12 @@ class NyzoClient:
                 print(f"Sending, try {attempt}")
             frozen = int(self.get_frozen().get('height', 0))
             res = self.send(recipient, amount, data, key_)
-            if not res.get("forwarded", False):
+            if str(res.get("forwarded", "false")).lower() == "false":
                 if verbose:
                     print(f"Not forwarded")
                 error = res.get("error", [])
                 notice = res.get("notice", [])
-                sent = {"sent": False, "try": max_tries, "error": error, "notice": notice}
+                sent = {"sent": False, "try": attempt, "error": error, "notice": notice}
                 return sent
             # Was forwarded, wait for freeze.
             while frozen < int(res['block height']):
@@ -205,7 +205,7 @@ class NyzoClient:
                 print(f"Sending, try {attempt}")
             frozen = int(self.get_frozen().get('height', 0))
             res = self.send(recipient, amount, data, key_)
-            if not res.get("forwarded", False):
+            if str(res.get("forwarded", "false")).lower() == "false":
                 if verbose:
                     print(f"Not forwarded")
                 error = res.get("error", [])

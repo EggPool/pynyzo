@@ -45,6 +45,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/EggPool/pynyzo',
-    version='0.0.12',
+    version='0.0.13',
     zip_safe=False,
 )
