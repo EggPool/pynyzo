@@ -77,9 +77,9 @@ class NyzoClient:
         except Exception:
             height = 0
         try:
-            hash = re.search(r'<div>hash</div><div[^>]*>([^<]*)</div>', html).groups()[0]
+            the_hash = re.search(r'<div>hash</div><div[^>]*>([^<]*)</div>', html).groups()[0]
         except Exception:
-            hash = b''
+            the_hash = b''
         try:
             timestamp = re.search(r'<div>verification timestamp \(ms\)</div><div>([^<]*)</div>', html).groups()[0]
         except Exception:
@@ -88,7 +88,7 @@ class NyzoClient:
             distance = re.search(r'<div>distance from open edge</div><div>([^<]*)</div>', html).groups()[0]
         except Exception:
             distance = 0
-        values = {"height": int(height), "hash": hash.replace('-', ''),
+        values = {"height": int(height), "hash": the_hash.replace('-', ''),
                   "timestamp": timestamp, "distance": distance}
         return values
 
@@ -170,10 +170,10 @@ class NyzoClient:
                 print(f"Sending, try {attempt}")
             frozen = int(self.get_frozen().get('height', 0))
             res = self.send(recipient, amount, data, key_)
-            #print(res)
+            # print(res)
             notice = res.get("notice", ("",))
             may_not_be_approved = "may not be approved" in notice[0] if len(notice) else False
-            #print(may_not_be_approved)
+            # print(may_not_be_approved)
             if str(res.get("forwarded", "false")).lower() == "false":
                 if verbose:
                     print(f"Not forwarded")
@@ -197,10 +197,12 @@ class NyzoClient:
                 sent = {"sent": False, "try": attempt, "error": error, "notice": notice}
                 return sent
             attempt += 1
-        sent = {"sent": False, "try": max_tries, "error": "", "notice": f"Forwarded but still not in chain after {max_tries} attempts."}
+        sent = {"sent": False, "try": max_tries, "error": "",
+                "notice": f"Forwarded but still not in chain after {max_tries} attempts."}
         return sent
 
-    async def async_safe_send(self, recipient: str, amount: float = 0, data: str = "", key_: str = "", max_tries=5, verbose=False):
+    async def async_safe_send(self, recipient: str, amount: float = 0, data: str = "", key_: str = "",
+                              max_tries=5, verbose=False):
         """
         Send Nyzo with data string to a RECIPIENT.
         Returns only after block is frozen or max_tries
@@ -237,7 +239,8 @@ class NyzoClient:
                 sent = {"sent": False, "try": attempt, "error": error, "notice": notice}
                 return sent
             attempt += 1
-        sent = {"sent": False, "try": max_tries, "error": "", "notice": f"Forwarded but still not in chain after {max_tries} attempts."}
+        sent = {"sent": False, "try": max_tries, "error": "",
+                "notice": f"Forwarded but still not in chain after {max_tries} attempts."}
         return sent
 
     def query_tx(self, tx_: str = ""):
@@ -249,4 +252,3 @@ class NyzoClient:
         temp = self.fake_table_to_list(res.text)
         # print("temp", temp)
         return temp[0]
-
