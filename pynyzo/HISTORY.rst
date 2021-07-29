@@ -2,6 +2,11 @@
 History
 =======
 
+0.0.16 (2021-07-29)
+-------------------
+
+Extra param for easier batch sends. By request.
+
 0.0.15 (2021-07-27)
 -------------------
 

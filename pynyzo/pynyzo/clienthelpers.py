@@ -113,7 +113,7 @@ class NyzoClient:
         else:
             return address, bytes.fromhex(address_raw)
 
-    def send(self, recipient: str, amount: float = 0, data: str = "", key_: str = ""):
+    def send(self, recipient: str, amount: float = 0, data: str = "", key_: str = "", frozen: dict=None):
         """
         Send Nyzo with data string to a RECIPIENT.
         """
@@ -122,9 +122,9 @@ class NyzoClient:
         seed = NyzoStringEncoder.decode(key_).get_bytes()
         # convert key to address
         address = KeyUtil.private_to_public(seed.hex())
-
         recipient, recipient_raw = self.normalize_address(recipient, as_hex=True)
-        frozen = self.get_frozen()
+        if frozen is None:
+            frozen = self.get_frozen()
         # print (f"Sending {amount} to {recipient} since balance of {address} is > {above}.")
         # print(f"Frozen edge is at {frozen['height']}")
         # Create a tx
